@@ -8,6 +8,17 @@ export async function exportLink(url: URL) {
   try {
     const html = await fetch(url).then((res) => res.text());
     const document = new DOMParser().parseFromString(html, "text/html");
+
+    const imgs = document?.getElementsByTagName("img") ?? [];
+    for (const img of imgs) {
+      img.removeAttribute("decoding");
+      img.removeAttribute("loading");
+      img.removeAttribute("srcset");
+      img.removeAttribute("width");
+      img.removeAttribute("height");
+      img.removeAttribute("sizes");
+    }
+
     const reader = new Readability(document);
     const article = reader.parse();
     Deno.writeFileSync("tmp.html", encoder.encode(article?.content));
@@ -26,7 +37,6 @@ export async function exportLink(url: URL) {
         "tmp.html",
       ],
     });
-    // command.spawn();
     const { code, stderr } = await command.output();
     if (code !== 0) {
       console.error(decoder.decode(stderr));
