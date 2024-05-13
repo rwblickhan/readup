@@ -1,9 +1,10 @@
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.43/deno-dom-wasm.ts";
 import { Readability } from "npm:@mozilla/readability";
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
 export async function exportLink(url: URL) {
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
   try {
     const html = await fetch(url).then((res) => res.text());
     const document = new DOMParser().parseFromString(html, "text/html");
@@ -25,17 +26,31 @@ export async function exportLink(url: URL) {
         "tmp.html",
       ],
     });
-    command.spawn();
+    // command.spawn();
     const { code, stderr } = await command.output();
     if (code !== 0) {
       console.error(decoder.decode(stderr));
     }
     Deno.removeSync("tmp.html");
+    console.log(`Successfully exported ${url}`);
   } catch (error) {
     console.error(`Failed to fetch ${url} due to error: ${error}`);
   }
 }
 
 if (import.meta.main) {
-  exportLink(new URL("https://example.org"));
+  if (Deno.args.length === 0) {
+    console.error("Please provide at least one link as an argument");
+    Deno.exit(1);
+  }
+  const urls = [];
+  for (const arg of Deno.args) {
+    try {
+      urls.push(new URL(arg));
+    } catch {
+      console.error(`${arg} is not a valid URL`);
+    }
+  }
+  await Promise.all(urls.map((url) => exportLink(url)));
+  Deno.exit(0);
 }
