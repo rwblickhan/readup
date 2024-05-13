@@ -21,7 +21,10 @@ export async function exportLink(url: URL) {
 
     const reader = new Readability(document);
     const article = reader.parse();
-    Deno.writeFileSync("tmp.html", encoder.encode(article?.content));
+    Deno.writeFileSync(
+      `${article?.title}.html`,
+      encoder.encode(article?.content),
+    );
     const command = new Deno.Command("pandoc", {
       args: [
         "-f",
@@ -34,14 +37,14 @@ export async function exportLink(url: URL) {
         `title=${article?.title}`,
         "--metadata",
         `author=${article?.byline}`,
-        "tmp.html",
+        `${article?.title}.html`,
       ],
     });
     const { code, stderr } = await command.output();
     if (code !== 0) {
       console.error(decoder.decode(stderr));
     }
-    Deno.removeSync("tmp.html");
+    Deno.removeSync(`${article?.title}.html`);
     console.log(`Successfully exported ${url}`);
   } catch (error) {
     console.error(`Failed to fetch ${url} due to error: ${error}`);
