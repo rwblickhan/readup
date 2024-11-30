@@ -21,6 +21,7 @@ async function convertMarkdownToEpub(inputPath: string) {
       "markdown",
       "-t",
       "epub",
+      "--webtex",
       "--embed-resources",
       "--standalone",
       "--resource-path",
