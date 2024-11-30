@@ -23,7 +23,7 @@ export async function exportLink(url: URL) {
     const article = reader.parse();
     Deno.writeFileSync(
       `${article?.title}.html`,
-      encoder.encode(article?.content),
+      encoder.encode(article?.content)
     );
     const command = new Deno.Command("pandoc", {
       args: [
